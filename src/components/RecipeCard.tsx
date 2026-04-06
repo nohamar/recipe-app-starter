@@ -31,9 +31,14 @@ export default function RecipeCard({
         <span>{recipe.prep_time} mins prep</span>
       </div>
       
+      <div className="recipe-card-image">
+        <img src={recipe.image_path} alt="" style={{ width: "100%", height: "auto", borderRadius: "8px" }}/>
+      </div>
+
       <div className="recipe-card-desc">
         <p>{recipe.description}</p>
       </div>
+      
       
       <div className="recipe-card-actions">
         {isOwner && (

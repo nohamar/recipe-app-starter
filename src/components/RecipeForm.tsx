@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import type { Category } from "../types/category";
 import type { NewRecipe, Recipe, RecipeFormData } from "../types/recipe";
+import { uploadImage } from "../services/storageservices";
+
 
 type RecipeFormProps = {
   categories: Category[];
@@ -19,6 +21,7 @@ const initialForm: RecipeFormData = {
   description: "",
   prep_time: 0,
   category_id: "",
+  image_path: "",
 };
 
 export default function RecipeForm({
@@ -42,6 +45,7 @@ export default function RecipeForm({
         description: editingRecipe.description,
         prep_time: editingRecipe.prep_time,
         category_id: editingRecipe.category_id.toString(),
+        image_path: editingRecipe.image_path
       });
       setLocalError("");
     } else {
@@ -74,6 +78,7 @@ export default function RecipeForm({
       const ok = await onEditRecipe(editingRecipe.id, {
         title: form.title.trim(),
         description: form.description.trim(),
+        image_path: form.image_path.trim(),
         prep_time: Number(form.prep_time),
         category_id: Number(form.category_id),
       });
@@ -82,6 +87,7 @@ export default function RecipeForm({
       const recipe: NewRecipe = {
         title: form.title.trim(),
         description: form.description.trim(),
+        image_path: form.image_path.trim(),
         prep_time: Number(form.prep_time),
         category_id: Number(form.category_id),
         user_id: userId,
@@ -89,6 +95,20 @@ export default function RecipeForm({
       };
       const ok = await onAddRecipe(recipe);
       if (ok) setForm(initialForm);
+    }
+  }
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return;
+    try {
+      const result = await uploadImage(userId, file);
+      if (result.error) {
+        console.error(result.error);
+        return;
+      }
+      updateField("image_path", result.data?.path || "");
+    } catch (err) {
+      console.error(err);
     }
   }
 
@@ -105,6 +125,10 @@ export default function RecipeForm({
             value={form.title}
             onChange={(e) => updateField("title", e.target.value)}
           />
+        </div>
+        <div className="form-group">
+          <label>Upload image</label>
+          <input type="file" accept="image/*" onChange={handleImageUpload} />
         </div>
 
         <div className="form-group">
